@@ -1,27 +1,70 @@
-# LangChain-RAG-Retrieval-Augmented-Generation-for-Document-Understanding
+# LangChain RAG — Retrieval-Augmented Generation for Document Understanding 📚🤖
 
-### Introduction
+> Two end-to-end **Retrieval-Augmented Generation (RAG)** pipelines that let you ask natural-language
+> questions about a PDF and get grounded answers — one built on **OpenAI**, one fully **open-source**
+> with Hugging Face.
 
-In this guide, I will demonstrate how to build a Retrieval-Augmented Generation (RAG) system using LangChain, FAISS, Hugging Face's Transformers library, and OpenAI. The aim is to efficiently process and query the contents of a PDF document, combining document retrieval with a question-answering model to provide accurate answers.
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=flat&logo=langchain&logoColor=white)
+![Hugging Face](https://img.shields.io/badge/Hugging%20Face-FFD21E?style=flat&logo=huggingface&logoColor=black)
+![FAISS](https://img.shields.io/badge/FAISS-009999?style=flat)
+![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=flat&logo=openai&logoColor=white)
 
-The steps involved are:
+## Overview
 
-1. **Install Necessary Packages**: I will install the required Python packages for document processing, embedding generation, vector storage, question-answering, and access to OpenAI's models.
-   
-2. **Set Up the Environment and Load the PDF**: Text will be extracted from a PDF file and divided into manageable chunks.
+RAG combines **document retrieval** with a **language model** so answers are grounded in your own
+content instead of the model's memory. This project demonstrates the full pattern over a PDF
+(*Andrew Ng's Deep Learning notes*): extract text → chunk it → embed the chunks → store them in a
+vector index → retrieve the most relevant chunks for a question → generate an answer.
 
-3. **Implement the RAG Pipeline**: Using SentenceTransformer for embeddings, FAISS for efficient document retrieval, and Hugging Face's question-answering pipeline, I will create a system capable of answering queries based on the content of the PDF.
+It is implemented **two ways** so you can compare a hosted-API approach with a self-hosted one:
 
-4. **Integrating OpenAI for Advanced Language Processing**: I will also integrate OpenAI's models to enhance language understanding and generation capabilities within our RAG system.
+| Notebook | Embeddings | LLM | When to use |
+|----------|-----------|-----|-------------|
+| `RAG_OpenAI.ipynb` | `OpenAIEmbeddings` | OpenAI LLM via `RetrievalQA` | Highest answer quality, needs an API key |
+| `RAG_Transformer.ipynb` | `SentenceTransformerEmbeddings` | Hugging Face `pipeline` (local) | Free / offline, no external API |
 
-By following this guide, you will develop a functional RAG system capable of retrieving relevant information from a document and answering specific questions using both Hugging Face and OpenAI models. This approach is highly effective for tasks such as document summarization, automated report generation, and information retrieval from large text corpora, offering enhanced language processing capabilities through OpenAI's models.
+## Pipeline
 
-### About the Developer
+1. **Load & extract** — read the PDF with `PyPDF2`.
+2. **Chunk** — split text into overlapping chunks with LangChain's `RecursiveCharacterTextSplitter`.
+3. **Embed** — turn chunks into vectors (OpenAI or SentenceTransformers).
+4. **Index** — store and search vectors with **FAISS**.
+5. **Retrieve + generate** — `RetrievalQA` / `load_qa_chain` fetches the top chunks and feeds them
+   to the LLM to answer the question.
+6. **Visualize (Transformer notebook)** — project embeddings down to 2-D with **PCA** and **t-SNE**
+   (`matplotlib`) to see how chunks cluster in vector space.
 
-This project is maintained by Tirth Laheri, a Software Developer with over 3 years of professional experience specializing in Python, machine learning, and data systems. My focus is on building efficient tools for document understanding and natural language processing.
+## Tech Stack
 
-For questions, feedback, or collaboration opportunities, please feel free to reach out:
+`Python` · `LangChain` · `FAISS` · `OpenAI` · `Hugging Face Transformers` · `sentence-transformers` · `PyPDF2` · `scikit-learn (PCA/t-SNE)` · `Matplotlib`
 
-- GitHub: github.com/Tirth1411
-- LinkedIn: linkedin.com/in/tirthlaheri
-- Email: tirthlaheri@gmail.com
+## How to Run
+
+```bash
+git clone https://github.com/Tirth1411/langchain-rag-retrieval-augmented-generation-for-document-understanding.git
+cd langchain-rag-retrieval-augmented-generation-for-document-understanding
+pip install langchain faiss-cpu openai sentence-transformers transformers PyPDF2 scikit-learn matplotlib
+
+# OpenAI version needs a key:
+export OPENAI_API_KEY="sk-..."
+jupyter notebook RAG_OpenAI.ipynb        # OpenAI-powered
+jupyter notebook RAG_Transformer.ipynb   # fully open-source
+```
+
+> **Note:** OpenAI deprecated `text-davinci-003`; if you run the OpenAI notebook, point it at a
+> current model (e.g. `gpt-4o-mini`). The Transformer notebook runs without any API key.
+
+## Repository Structure
+
+```
+RAG_OpenAI.ipynb        # RAG with OpenAI embeddings + LLM
+RAG_Transformer.ipynb   # RAG with SentenceTransformers + Hugging Face, plus embedding visualization
+data/                   # source PDF (Deep Learning notes)
+```
+
+## What this demonstrates
+
+- The complete RAG architecture (chunk → embed → index → retrieve → generate) end-to-end.
+- A practical comparison between **hosted (OpenAI)** and **open-source (Hugging Face)** stacks.
+- Working with vector stores (FAISS) and inspecting the embedding space.
